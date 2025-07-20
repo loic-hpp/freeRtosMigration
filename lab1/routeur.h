@@ -196,7 +196,7 @@ int nbPacketMauvaisePriorite =0;
 int nbPacketMauvaisePrioriteTotal = 0;
 int nbPacketTraites_Video = 0;
 
-const TickType_t delai_pour_vider_les_fifos_msec = 8 / portTICK_PERIOD_MS; // la valeur entière ici est dictement le nombre de ms
+ const TickType_t delai_pour_vider_les_fifos_msec = pdMS_TO_TICKS(1000); // la valeur entière ici est dictement le nombre de ms
 int print_paquets_rejetes = 0;
 int limite_de_paquets= 100000;
 

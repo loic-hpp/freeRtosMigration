@@ -7,7 +7,7 @@
 *
 *            		          					Guy BOIS
 *                                  Polytechnique Montreal, Qc, CANADA
-*                                                  02/2021
+*                                                  07/2025
 *
 *
 *********************************************************************************************************
@@ -110,7 +110,7 @@ int taskCreationErrorCheck(TaskHandle_t handle) {
 
 int create_tasks() {
 
-   StartupTaskHandler = xTaskCreateStatic(
+  StartupTaskHandler = xTaskCreateStatic(
       StartupTask,         // Fonction de la tâche
       "StartUp Task",      // Nom (à des fins de debug)
       TASK_STK_SIZE,       // Taille de la pile (en mots, pas octets)
@@ -220,7 +220,7 @@ void TaskGenerate(void *data) {
     xEventGroupWaitBits(
         RouterStatus,      // Event group handle
         TASK_GENERATE_RDY, // Bits à attendre
-        pdFALSE,       // Efface les bits après détection (comportement µC/OS)
+        pdFALSE,      // Efface les bits après détection (comportement µC/OS)
         pdTRUE,       // Attendre que TOUS les bits soient SET
         portMAX_DELAY // Blocage infini (équivalent timeout = 0 µC/OS)
     );
@@ -286,9 +286,10 @@ void TaskGenerate(void *data) {
       }
 
       else
-        safeprintf("TaskGenenerate: nb de paquets dans fifo de TaskQueueing - "
-                   "apres production: %d \n",
-                   uxQueueMessagesWaiting(TaskQueueingQ));
+        safeprintf(
+            "\nTaskGenenerate: nb de paquets dans fifo de TaskQueueing - "
+            "apres production: %d \n",
+            uxQueueMessagesWaiting(TaskQueueingQ));
 
       if ((nbPacketCrees % packGenQty) ==
           0) // On gen�re au maximum 255 paquets par phase de g�neration
@@ -324,14 +325,14 @@ void TaskReset(void *data) {
     xEventGroupSetBits(RouterStatus, TASKS_ROUTER);
     EventBits_t flags = xEventGroupGetBits(RouterStatus);
     xil_printf("--------------------- Flags: %x "
-             "---------------------------------------\n",
-             flags);
+               "---------------------------------------\n",
+               flags);
     vTaskSuspend(TaskResetHandler);
   }
 }
 
 void TaskStop(void *data) {
-  
+
   xSemaphoreTake(Sem, portMAX_DELAY);
   // Suspend all tasks except statistics one
   xil_printf(
@@ -445,10 +446,10 @@ void TaskQueueing(void *pdata) {
         break;
 
       default:
-        safeprintf("TaskQueueing: Erreur sur la priorite du paquet - %d \n",
+        safeprintf("\nTaskQueueing: Erreur sur la priorite du paquet - %d \n",
                    packet->data[0]);
 #if FULL_TRACE == 1
-         xQueueSendToBack(TaskStatsQ, &packet, 0);
+        xQueueSendToBack(TaskStatsQ, &packet, 0);
 #else
         vPortFree((void *)packet);
 #endif
@@ -634,7 +635,8 @@ void TaskComputing(void *pdata) {
 #if PERFORMANCE_TRACE == 1
             Update_TS(packet);
 #endif
-            result = xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE], &packet, 0);
+            result =
+                xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE], &packet, 0);
           } else {
             if (packet->dst >= INT_BC_LOW && packet->dst <= INT_BC_HIGH) {
               Packet *others[2];
@@ -650,9 +652,12 @@ void TaskComputing(void *pdata) {
 #if PERFORMANCE_TRACE == 1
               Update_TS(packet);
 #endif
-              result = xQueueSendToBack(TaskOutputPortQ[PACKET_VIDEO], &packet, 0);
-              result = xQueueSendToBack(TaskOutputPortQ[PACKET_AUDIO], &packet, 0);
-              result = xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE], &packet, 0);
+              result =
+                  xQueueSendToBack(TaskOutputPortQ[PACKET_VIDEO], &packet, 0);
+              result =
+                  xQueueSendToBack(TaskOutputPortQ[PACKET_AUDIO], &packet, 0);
+              result =
+                  xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE], &packet, 0);
             }
           }
         }
@@ -883,8 +888,8 @@ void TaskStats(void *pdata) {
     if (nbPacketCrees > limite_de_paquets)
       xSemaphoreGive(Sem);
 
-          // On imprime ls statistiques � toutes les 30 secondes
-          TickType_t xDelay = 30000 / portTICK_PERIOD_MS;
+    // On imprime ls statistiques � toutes les 30 secondes
+    TickType_t xDelay = 30000 / portTICK_PERIOD_MS;
     vTaskDelay(xDelay);
   }
 }
@@ -963,29 +968,31 @@ void StartupTask(void *p_arg) {
   err |= taskCreationErrorCheck(TaskQueueingHandler);
 
   for (int i = 0; i < NB_FIFO; i++) {
-    TaskComputingHandler[i] = xTaskCreateStatic(TaskComputing, "TaskComputing", TASK_STK_SIZE,
-                               &FIFO[i], TaskComputingPRIO - i,
-                               TaskComputingSTK[i], &TaskComputingTCB[i]);
+    TaskComputingHandler[i] = xTaskCreateStatic(
+        TaskComputing, "TaskComputing", TASK_STK_SIZE, &FIFO[i],
+        TaskComputingPRIO - i, TaskComputingSTK[i], &TaskComputingTCB[i]);
     err |= taskCreationErrorCheck(TaskComputingHandler[i]);
   }
 
   for (int i = 0; i < NB_OUTPUT_PORTS; i++) {
-    TaskOutputPortHandler[i] = xTaskCreateStatic(TaskOutputPort, "OutputPort", TASK_STK_SIZE,
-                               &Port[i], TaskOutputPortPRIO,
-                               TaskOutputPortSTK[i], &TaskOutputPortTCB[i]);
+    TaskOutputPortHandler[i] = xTaskCreateStatic(
+        TaskOutputPort, "OutputPort", TASK_STK_SIZE, &Port[i],
+        TaskOutputPortPRIO, TaskOutputPortSTK[i], &TaskOutputPortTCB[i]);
     err |= taskCreationErrorCheck(TaskOutputPortHandler[i]);
   }
 
-  TaskStatsHandler = xTaskCreateStatic(TaskStats, "TaskStats", TASK_STK_SIZE, NULL,
-                             TaskStatsPRIO, TaskStatsSTK, &TaskStatsTCB);
+  TaskStatsHandler =
+      xTaskCreateStatic(TaskStats, "TaskStats", TASK_STK_SIZE, NULL,
+                        TaskStatsPRIO, TaskStatsSTK, &TaskStatsTCB);
   err |= taskCreationErrorCheck(TaskStatsHandler);
 
-  TaskResetHandler = xTaskCreateStatic(TaskReset, "TaskReset", TASK_STK_SIZE, NULL,
-                             TaskResetPRIO, TaskResetSTK, &TaskResetTCB);
+  TaskResetHandler =
+      xTaskCreateStatic(TaskReset, "TaskReset", TASK_STK_SIZE, NULL,
+                        TaskResetPRIO, TaskResetSTK, &TaskResetTCB);
   err |= taskCreationErrorCheck(TaskResetHandler);
 
   TaskStopHandler = xTaskCreateStatic(TaskStop, "TaskStop", TASK_STK_SIZE, NULL,
-                             TaskStopPRIO, TaskStopSTK, &TaskStopTCB);
+                                      TaskStopPRIO, TaskStopSTK, &TaskStopTCB);
   err |= taskCreationErrorCheck(TaskStopHandler);
 
   vTaskSuspend(NULL);
