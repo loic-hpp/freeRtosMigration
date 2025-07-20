@@ -138,13 +138,13 @@ int create_events() {
 
   // Creation des files externes - va servir � la manipulation 2
 
-  source_errQ = xQueueCreate(1024, sizeof(Packet));
-  crc_errQ = xQueueCreate(1024, sizeof(Packet));
-  TaskQueueingQ = xQueueCreate(1024, sizeof(Packet));
-  TaskStatsQ = xQueueCreate(1024, sizeof(Packet));
+  source_errQ = xQueueCreate(1024, sizeof(Packet *));
+  crc_errQ = xQueueCreate(1024, sizeof(Packet *));
+  TaskQueueingQ = xQueueCreate(1024, sizeof(Packet *));
+  TaskStatsQ = xQueueCreate(1024, sizeof(Packet *));
   for (int i = 0; i < NB_FIFO; i++) {
-    TaskComputingQ[i] = xQueueCreate(1024, sizeof(Packet));
-    TaskOutputPortQ[i] = xQueueCreate(1024, sizeof(Packet));
+    TaskComputingQ[i] = xQueueCreate(1024, sizeof(Packet *));
+    TaskOutputPortQ[i] = xQueueCreate(1024, sizeof(Packet *));
   }
 
   RouterStatus = xEventGroupCreate();
@@ -643,7 +643,6 @@ void TaskComputing(void *pdata) {
               int i;
               for (i = 0; i < ARRAY_SIZE(others); ++i) {
                 others[i] = (Packet *)pvPortMalloc(sizeof(Packet));
-
                 memcpy(others[i], packet, sizeof(Packet));
               }
               safeprintf("\nTaskComputing %s: paquet BC arrive dans tous les "
@@ -651,13 +650,16 @@ void TaskComputing(void *pdata) {
                          info.name);
 #if PERFORMANCE_TRACE == 1
               Update_TS(packet);
+              for (i = 0; i < ARRAY_SIZE(others); ++i) {
+                Update_TS(others[i]);
+              }
 #endif
               result =
                   xQueueSendToBack(TaskOutputPortQ[PACKET_VIDEO], &packet, 0);
-              result =
-                  xQueueSendToBack(TaskOutputPortQ[PACKET_AUDIO], &packet, 0);
-              result =
-                  xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE], &packet, 0);
+              result = xQueueSendToBack(TaskOutputPortQ[PACKET_AUDIO],
+                                        &others[0], 0);
+              result = xQueueSendToBack(TaskOutputPortQ[PACKET_AUTRE],
+                                        &others[1], 0);
             }
           }
         }
@@ -889,7 +891,7 @@ void TaskStats(void *pdata) {
       xSemaphoreGive(Sem);
 
     // On imprime ls statistiques � toutes les 30 secondes
-    TickType_t xDelay = 30000 / portTICK_PERIOD_MS;
+    TickType_t xDelay = pdMS_TO_TICKS(30000);
     vTaskDelay(xDelay);
   }
 }
