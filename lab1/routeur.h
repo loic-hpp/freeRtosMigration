@@ -41,7 +41,7 @@
 #define			 WAITFORComputing				1
 
 // Commandes a la compilation
-#define 		 FULL_TRACE 					1
+#define 		 FULL_TRACE 					0
 #define 		 PERFORMANCE_TRACE				1
 // Les 4 prochains define impliquent PERFORMANE_TRACE == 1
 // Dans ce qui suit MUTEX et SEMAPHORE a 0 indique pas de section critique
@@ -196,7 +196,7 @@ int nbPacketMauvaisePriorite =0;
 int nbPacketMauvaisePrioriteTotal = 0;
 int nbPacketTraites_Video = 0;
 
- const TickType_t delai_pour_vider_les_fifos_msec = pdMS_TO_TICKS(1000); // la valeur entière ici est dictement le nombre de ms
+ const TickType_t delai_pour_vider_les_fifos_msec = pdMS_TO_TICKS(50); // la valeur entière ici est dictement le nombre de ms
 int print_paquets_rejetes = 0;
 int limite_de_paquets= 100000;
 

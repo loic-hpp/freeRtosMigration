@@ -806,18 +806,33 @@ void TaskStats(void *pdata) {
 #if PERFORMANCE_TRACE == 1
 
     max_delay_video_float = (float)max_delay_video / (float)freq_hz;
+    double val = (double)max_delay_video / (double)freq_hz;
+    int int_part = (int)val;
+    int frac_part = (int)((val - int_part) * 1000000000.0);
+    if (frac_part < 0)
+      frac_part = -frac_part;
     xil_printf("22- Pire temps video  ");
-    printf("'%.10f'", max_delay_video_float);
+    xil_printf("'%d.%09d'", int_part, frac_part);
     xil_printf("\r\n");
 
     max_delay_audio_float = (float)max_delay_audio / (float)freq_hz;
+    val = (double)max_delay_audio / (double)freq_hz;
+    int_part = (int)val;
+    frac_part = (int)((val - int_part) * 1000000000.0);
+    if (frac_part < 0)
+      frac_part = -frac_part;
     xil_printf("23- Pire temps audio  ");
-    printf("'%.10f'", max_delay_audio_float);
+    xil_printf("'%d.%09d'", int_part, frac_part);
     xil_printf("\r\n");
 
     max_delay_autre_float = (float)max_delay_autre / (float)freq_hz;
+    val = (double)max_delay_autre / (double)freq_hz;
+    int_part = (int)val;
+    frac_part = (int)((val - int_part) * 1000000000.0);
+    if (frac_part < 0)
+      frac_part = -frac_part;
     xil_printf("24- Pire temps autre  ");
-    printf("'%.10f'", max_delay_autre_float);
+    xil_printf("'%d.%08d'", int_part, frac_part);
     xil_printf("\r\n");
 
 #if MUTEX == 1
@@ -825,19 +840,27 @@ void TaskStats(void *pdata) {
     average_blocking_mutex_float = (float)average_blocking_mutex;
     average_blocking_mutex_float =
         average_blocking_mutex_float / (float)nbPacketTraites_Video;
-    average_blocking_mutex_float =
-        average_blocking_mutex_float / (float)freq_hz;
-    printf("'%.10f' pour %d packets videos traites",
-           average_blocking_mutex_float, nbPacketTraites_Video);
+    val = (double)average_blocking_mutex_float / (double)freq_hz;
+    int_part = (int)val;
+    frac_part = (int)((val - int_part) * 1000000000.0);
+    if (frac_part < 0)
+      frac_part = -frac_part;
+    xil_printf("'%d.%09d' pour %d packets videos traites",
+               int_part, frac_part,
+               nbPacketTraites_Video);
     xil_printf("\r\n");
 #elif SEMAPHORE == 1
     xil_printf("25- Attente de blocage moyen pour le semaphore :");
     average_blocking_sem_float = (float)average_blocking_sem;
     average_blocking_sem_float =
         average_blocking_sem_float / (float)nbPacketTraites_Video;
-    average_blocking_sem_float = average_blocking_sem_float / (float)freq_hz;
-    printf("'%.10f' pour %d packets videos traites", average_blocking_sem_float,
-           nbPacketTraites_Video);
+    val = (double)average_blocking_sem_float / (double)freq_hz;
+    int_part = (int)val;
+    frac_part = (int)((val - int_part) * 1000000000.0);
+    if (frac_part < 0)
+      frac_part = -frac_part;
+    xil_printf("'%d.%09d' pour %d packets videos traites",
+               int_part, frac_part, nbPacketTraites_Video);
     xil_printf("\r\n");
 #endif
 
@@ -891,7 +914,7 @@ void TaskStats(void *pdata) {
       xSemaphoreGive(Sem);
 
     // On imprime ls statistiques � toutes les 30 secondes
-    TickType_t xDelay = pdMS_TO_TICKS(30000);
+    TickType_t xDelay = pdMS_TO_TICKS(10000);
     vTaskDelay(xDelay);
   }
 }
@@ -912,6 +935,7 @@ void StartupTask(void *p_arg) {
   printf("Frequence courante du tick d horloge - %d\r\n", configTICK_RATE_HZ);
 
   // freq_hz = CPU_TS_TmrFreqGet(&err); /* Get CPU timestamp timer frequency. */
+  freq_hz = configTICK_RATE_HZ;
   xil_printf("\nfreq du timestamp: %d\n", freq_hz);
 
   // On cr�e les t�ches
