@@ -191,10 +191,48 @@ void Update_TS(Packet *packet) {
 }
 
 /*
-*********************************************************************************************************
-*                                               STARTUP TASK
-*********************************************************************************************************
-*/
+ *********************************************************************************************************
+ *											  Routine d'interruptions
+ *
+ *********************************************************************************************************
+ */
+
+// void fit_timer_isr0(void *CallbackRef)
+// {
+//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+// #if DEBUG_ISR == 1
+//     xil_printf("------------------ FIT TIMER 0 -------------------\n");
+// #endif
+
+//     // if (Stat_Period == SWITCH1)
+//     // {
+//         xEventGroupSetBitsFromISR(
+//             RouterStatus,           
+//             TASK_STOP_RDY,          
+//             &xHigherPriorityTaskWoken
+//         );
+//     // }
+
+//     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+// }
+
+void gpio_isr0(void *p_int_arg, uint32_t source_cpu)
+{
+
+// #if DEBUG_ISR == 1
+	xil_printf("---------------gpio_isr0---------------\n");
+// #endif
+
+}
+
+void gpio_isr1(void *p_int_arg, uint32_t source_cpu){
+	xil_printf("---------------gpio_isr1---------------\n");
+
+
+}
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //									TASKS
@@ -926,9 +964,16 @@ void err_msg(char *entete, uint8_t err) {
   }
 }
 
+/*
+*********************************************************************************************************
+*                                               STARTUP TASK
+*********************************************************************************************************
+*/
+
 void StartupTask(void *p_arg) {
-  // printf("UCOS - Total configured heap size. %d\r\n", seg_info.TotalSize);
-  // printf("UCOS - Total used size after init. %d\r\n", seg_info.UsedSize);
+  printf("Initialisation interruptions - \n");
+  eanable_interruption();
+  printf("Initialisation des interruptions terminées - \n");
 
   printf("Programme initialise\r\n");
 

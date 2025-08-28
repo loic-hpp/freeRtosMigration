@@ -18,6 +18,8 @@
 #include "queue.h"
 #include "semphr.h"
 #include "event_groups.h"
+#include "masque_lies_aux_ISRs.h"
+#include "interruptions.h"
 
 #define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 
@@ -39,6 +41,7 @@
 
 
 #define			 WAITFORComputing				1
+#define          DEBUG_ISR                      1
 
 // Commandes a la compilation
 #define 		 FULL_TRACE 					0
