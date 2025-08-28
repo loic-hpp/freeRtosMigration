@@ -11,6 +11,8 @@
 #include "xil_exception.h"
 #include "xparameters.h"
 #include <stdint.h>
+#include "xscugic.h"
+
 
 
 // ================== DEVICE IDs ==================
@@ -19,6 +21,8 @@
 #define INTC_DEVICE_ID               0
 #define GPIO_SWITCH_DEVICE_ID        1
 #define TIMER_IRQ_ID                 4U
+#define AXI_INTC_IRQ_ID              31
+
 
 // ================== INTERRUPT IDs ==================
 #define PL_INTC_IRQ_ID               XPS_IRQ_INT_ID
@@ -56,9 +60,13 @@
 #define SWITCH2                      0b10  // Stat every 20 sec
 #define SWITCH1and2                  0b11
 
+// ================== DEVICE INSTANCES ==================
+extern XGpio gpButton;
+extern XGpio gpSwitch;
 
 
 void eanable_interruption();
+int connect_AXI_INTC_to_GIC();
 
 
 // void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu);

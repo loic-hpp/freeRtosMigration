@@ -192,7 +192,8 @@ void Update_TS(Packet *packet) {
 
 /*
  *********************************************************************************************************
- *											  Routine d'interruptions
+ *											  Routine
+ *d'interruptions
  *
  *********************************************************************************************************
  */
@@ -208,8 +209,8 @@ void Update_TS(Packet *packet) {
 //     // if (Stat_Period == SWITCH1)
 //     // {
 //         xEventGroupSetBitsFromISR(
-//             RouterStatus,           
-//             TASK_STOP_RDY,          
+//             RouterStatus,
+//             TASK_STOP_RDY,
 //             &xHigherPriorityTaskWoken
 //         );
 //     // }
@@ -217,22 +218,21 @@ void Update_TS(Packet *packet) {
 //     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 // }
 
-void gpio_isr0(void *p_int_arg, uint32_t source_cpu)
-{
+void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
 
-// #if DEBUG_ISR == 1
-	xil_printf("---------------gpio_isr0---------------\n");
-// #endif
+  int button_data = 0;
 
+  xil_printf("---------------gpio_isr0---------------\n");
+  u32 status = XGpio_InterruptGetStatus(&gpButton);
+  button_data = XGpio_DiscreteRead(&gpButton, GPIO_BUTTONS_CHANNEL);
+
+  TurnLEDButton(button_data);
+  XGpio_InterruptClear(&gpButton, status);
 }
 
-void gpio_isr1(void *p_int_arg, uint32_t source_cpu){
-	xil_printf("---------------gpio_isr1---------------\n");
-
-
+void gpio_isr1(void *p_int_arg, uint32_t source_cpu) {
+  xil_printf("---------------gpio_isr1---------------\n");
 }
-
-
 
 ///////////////////////////////////////////////////////////////////////////////////////
 //									TASKS
@@ -883,8 +883,7 @@ void TaskStats(void *pdata) {
     frac_part = (int)((val - int_part) * 1000000000.0);
     if (frac_part < 0)
       frac_part = -frac_part;
-    xil_printf("'%d.%09d' pour %d packets videos traites",
-               int_part, frac_part,
+    xil_printf("'%d.%09d' pour %d packets videos traites", int_part, frac_part,
                nbPacketTraites_Video);
     xil_printf("\r\n");
 #elif SEMAPHORE == 1
@@ -897,8 +896,8 @@ void TaskStats(void *pdata) {
     frac_part = (int)((val - int_part) * 1000000000.0);
     if (frac_part < 0)
       frac_part = -frac_part;
-    xil_printf("'%d.%09d' pour %d packets videos traites",
-               int_part, frac_part, nbPacketTraites_Video);
+    xil_printf("'%d.%09d' pour %d packets videos traites", int_part, frac_part,
+               nbPacketTraites_Video);
     xil_printf("\r\n");
 #endif
 
