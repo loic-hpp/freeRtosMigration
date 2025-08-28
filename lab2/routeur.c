@@ -219,19 +219,27 @@ void Update_TS(Packet *packet) {
 // }
 
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
+#if DEBUG_ISR == 1
+  xil_printf("---------------gpio_isr0---------------\n");
+#endif
 
   int button_data = 0;
-
-  xil_printf("---------------gpio_isr0---------------\n");
   u32 status = XGpio_InterruptGetStatus(&gpButton);
   button_data = XGpio_DiscreteRead(&gpButton, GPIO_BUTTONS_CHANNEL);
-
   TurnLEDButton(button_data);
   XGpio_InterruptClear(&gpButton, status);
 }
 
 void gpio_isr1(void *p_int_arg, uint32_t source_cpu) {
+#if DEBUG_ISR == 1
   xil_printf("---------------gpio_isr1---------------\n");
+#endif
+
+  int switch_data = 0;
+  u32 status = XGpio_InterruptGetStatus(&gpSwitch);
+  switch_data = XGpio_DiscreteRead(&gpSwitch, GPIO_SWITCH_DEVICE_ID);
+  TurnLEDSwitch(switch_data);
+  XGpio_InterruptClear(&gpSwitch, status);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////

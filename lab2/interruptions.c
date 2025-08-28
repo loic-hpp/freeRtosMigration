@@ -27,15 +27,17 @@ void initialize_gpio0(void) {
 }
 
 void initialize_gpio1(void) {
-  if (XGpio_Initialize(&gpSwitch, GPIO_SWITCH_DEVICE_ID) ==
-      XST_DEVICE_NOT_FOUND)
+  int status = XGpio_Initialize(&gpSwitch, XPAR_AXI_GPIO_1_BASEADDR);
+  if (status != XST_SUCCESS) {
     xil_printf("Erreur init gpio1\n");
+    return;
+  }
 
   XGpio_SetDataDirection(&gpSwitch, 1, 0x1);
   XGpio_SetDataDirection(&gpSwitch, 2, 0x0);
 
-  XGpio_InterruptGlobalEnable(&gpSwitch);
   XGpio_InterruptEnable(&gpSwitch, XGPIO_IR_MASK);
+  XGpio_InterruptGlobalEnable(&gpSwitch);
 }
 
 // ================== TIMER INITIALIZATION ==================
@@ -144,7 +146,7 @@ void cleanup(void) {
 
 void eanable_interruption() {
   initialize_gpio0();
-  // initialize_gpio1();
+  initialize_gpio1();
   // initialize_timer();
   initialize_axi_intc();
   connect_axi();
