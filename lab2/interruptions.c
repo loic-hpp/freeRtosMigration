@@ -69,12 +69,12 @@ int initialize_axi_intc(void) {
 
 // ================== INTERRUPT CONNECTION ==================
 
-// int connect_fit_timer_irq0(void)
-// {
-//     int status = XIntc_Connect(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR,
-//     (XInterruptHandler)fit_timer_isr0, NULL); if (status == XST_SUCCESS)
-//     XIntc_Enable(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR); return status;
-// }
+int connect_fit_timer_irq0(void)
+{
+    int status = XIntc_Connect(&axi_intc, 1U,
+    (XInterruptHandler)fit_timer_isr0, NULL); if (status == XST_SUCCESS)
+    XIntc_Enable(&axi_intc, 1U); return status;
+}
 
 // int connect_fit_timer_irq1(void)
 // {
@@ -113,7 +113,7 @@ void connect_axi(void) {
   int status = 0;
   status |= connect_gpio_irq0();
   status |= connect_gpio_irq1();
-  // status |= connect_fit_timer_irq0();
+  status |= connect_fit_timer_irq0();
   // status |= connect_fit_timer_irq1();
   // status |= connect_timer_irq();
 

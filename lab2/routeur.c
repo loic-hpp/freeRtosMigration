@@ -198,25 +198,25 @@ void Update_TS(Packet *packet) {
  *********************************************************************************************************
  */
 
-// void fit_timer_isr0(void *CallbackRef)
-// {
-//     BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
-// #if DEBUG_ISR == 1
-//     xil_printf("------------------ FIT TIMER 0 -------------------\n");
-// #endif
+#if DEBUG_ISR == 1
+    xil_printf("------------------ FIT TIMER 0 -------------------\n");
+#endif
 
-//     // if (Stat_Period == SWITCH1)
-//     // {
-//         xEventGroupSetBitsFromISR(
-//             RouterStatus,
-//             TASK_STOP_RDY,
-//             &xHigherPriorityTaskWoken
-//         );
-//     // }
+    // if (Stat_Period == SWITCH1)
+    // {
+        // xEventGroupSetBitsFromISR(
+        //     RouterStatus,
+        //     TASK_STOP_RDY,
+        //     &xHigherPriorityTaskWoken
+        // );
+    // }
 
-//     portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
-// }
+    // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+}
 
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
 #if DEBUG_ISR == 1
