@@ -26,12 +26,12 @@
 
 // ================== INTERRUPT IDs ==================
 #define PL_INTC_IRQ_ID               XPS_IRQ_INT_ID
-#define FIT_IRQ0_ID                  XPAR_AXI_INTC_0_FIT_TIMER_0_INTERRUPT_INTR
-#define FIT_IRQ1_ID                  XPAR_AXI_INTC_0_FIT_TIMER_1_INTERRUPT_INTR
+#define FIT_IRQ0_ID                  1U
+#define FIT_IRQ1_ID                  0U
 #define GPIO_BUTTON_IRQ_ID           XPAR_AXI_INTC_0_AXI_GPIO_0_IP2INTC_IRPT_INTR
 #define GPIO_SWITCH_IRQ_ID           XPAR_AXI_INTC_0_AXI_GPIO_1_IP2INTC_IRPT_INTR
 
-#define XPAR_AXI_TIMER_DEVICE_ID     XPAR_AXI_TIMER_0_DEVICE_ID
+#define XPAR_AXI_TIMER_DEVICE_ID     0U
 
 // ================== GPIO MASKS ==================
 #define XGPIO_IR_MASK                0x3  /* Mask of all bits */
@@ -63,6 +63,8 @@
 // ================== DEVICE INSTANCES ==================
 extern XGpio gpButton;
 extern XGpio gpSwitch;
+extern XTmrCtr timer_dev;
+
 
 
 void eanable_interruption();
@@ -70,9 +72,9 @@ int connect_AXI_INTC_to_GIC();
 
 
 void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu);
-// void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu);
+void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu);
 
-// void timer_isr(void *p_int_arg, uint32_t source_cpu);
+void timer_isr(void *p_int_arg, uint32_t source_cpu);
 
 
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu);

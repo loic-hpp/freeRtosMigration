@@ -43,15 +43,22 @@ void initialize_gpio1(void) {
 // ================== TIMER INITIALIZATION ==================
 
 void initialize_timer(void) {
-  XTmrCtr_Config timerConfig;
+ 
+  XTmrCtr_Config* timerConfig = XTmrCtr_LookupConfig(XPAR_AXI_TIMER_0_BASEADDR);
+  if (timerConfig == NULL) {
+    xil_printf("AXI_TIMER LookupConfig failed\r\n");
+    return;
+  }
 
-  timerConfig.BaseAddress = XPAR_AXI_TIMER_0_BASEADDR;
-  timerConfig.SysClockFreqHz = XPAR_CPU_CORE_CLOCK_FREQ_HZ;
-
-  XTmrCtr_CfgInitialize(&timer_dev, &timerConfig, timerConfig.BaseAddress);
-
-  XTmrCtr_SetResetValue(&timer_dev, 0, 0xFA56EA00);
-  XTmrCtr_SetOptions(&timer_dev, 0,
+  XTmrCtr_CfgInitialize(&timer_dev, timerConfig, XPAR_AXI_TIMER_0_BASEADDR);
+  int status = XTmrCtr_Initialize(&timer_dev, XPAR_AXI_TIMER_0_BASEADDR);
+  if (status != XST_SUCCESS) {
+    xil_printf("AXI_TIMER Initialize failed\r\n");
+    return;
+  }
+  
+  XTmrCtr_SetResetValue(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID, 0xFA56EA00);
+  XTmrCtr_SetOptions(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID,
                      XTC_INT_MODE_OPTION | XTC_AUTO_RELOAD_OPTION |
                          XTC_DOWN_COUNT_OPTION);
 }
@@ -69,27 +76,29 @@ int initialize_axi_intc(void) {
 
 // ================== INTERRUPT CONNECTION ==================
 
-int connect_fit_timer_irq0(void)
-{
-    int status = XIntc_Connect(&axi_intc, 1U,
-    (XInterruptHandler)fit_timer_isr0, NULL); if (status == XST_SUCCESS)
-    XIntc_Enable(&axi_intc, 1U); return status;
+int connect_fit_timer_irq0(void) {
+  int status = XIntc_Connect(&axi_intc, FIT_IRQ0_ID,
+                             (XInterruptHandler)fit_timer_isr0, NULL);
+  if (status == XST_SUCCESS)
+    XIntc_Enable(&axi_intc, FIT_IRQ0_ID);
+  return status;
 }
 
-// int connect_fit_timer_irq1(void)
-// {
-//     int status = XIntc_Connect(&axi_intc, XPAR_FABRIC_AXI_GPIO_1_INTR,
-//     (XInterruptHandler)fit_timer_isr1, NULL); if (status == XST_SUCCESS)
-//     XIntc_Enable(&axi_intc, XPAR_FABRIC_AXI_GPIO_1_INTR); return status;
-// }
+int connect_fit_timer_irq1(void) {
+  int status = XIntc_Connect(&axi_intc, FIT_IRQ1_ID,
+                             (XInterruptHandler)fit_timer_isr1, NULL);
+  if (status == XST_SUCCESS)
+    XIntc_Enable(&axi_intc, FIT_IRQ1_ID);
+  return status;
+}
 
-// int connect_timer_irq(void)
-// {
-//     int status = XIntc_Connect(&axi_intc,
-//     XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR, (XInterruptHandler)timer_isr,
-//     NULL); if (status == XST_SUCCESS) XIntc_Enable(&axi_intc,
-//     XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR); return status;
-// }
+int connect_timer_irq(void) {
+  int status = XIntc_Connect(&axi_intc, TIMER_IRQ_ID,
+                             (XInterruptHandler)timer_isr, NULL);
+  if (status == XST_SUCCESS)
+    XIntc_Enable(&axi_intc, TIMER_IRQ_ID);
+  return status;
+}
 
 int connect_gpio_irq0(void) {
   int status = XIntc_Connect(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR,
@@ -114,8 +123,8 @@ void connect_axi(void) {
   status |= connect_gpio_irq0();
   status |= connect_gpio_irq1();
   status |= connect_fit_timer_irq0();
-  // status |= connect_fit_timer_irq1();
-  // status |= connect_timer_irq();
+  status |= connect_fit_timer_irq1();
+  status |= connect_timer_irq();
 
   XIntc_Start(&axi_intc, XIN_REAL_MODE);
 
@@ -141,13 +150,13 @@ void connect_axi(void) {
 void cleanup(void) {
   XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR);
   XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_GPIO_1_INTR);
-  // XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_TIMER_0_INTERRUPT_INTR);
+  XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_TIMER_0_INTR);
 }
 
 void eanable_interruption() {
   initialize_gpio0();
   initialize_gpio1();
-  // initialize_timer();
+  initialize_timer();
   initialize_axi_intc();
   connect_axi();
 }

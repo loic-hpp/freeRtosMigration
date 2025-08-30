@@ -218,6 +218,23 @@ void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu)
     // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
+void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu)
+{
+    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+#if DEBUG_ISR == 1
+    xil_printf("------------------ FIT TIMER 1 -------------------\n");
+#endif
+
+}
+
+void timer_isr(void *p_int_arg, uint32_t source_cpu){
+  xil_printf("---------------timer_isr---------------\n");
+	// réinitialiser le timer
+	XTmrCtr_Reset(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
+}
+
+
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
 #if DEBUG_ISR == 1
   xil_printf("---------------gpio_isr0---------------\n");
