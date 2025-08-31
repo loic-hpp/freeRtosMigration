@@ -50,7 +50,7 @@ void initialize_timer(void) {
     return;
   }
 
-  XTmrCtr_CfgInitialize(&timer_dev, timerConfig, XPAR_AXI_TIMER_0_BASEADDR);
+  XTmrCtr_CfgInitialize(&timer_dev, timerConfig, timerConfig->BaseAddress);
   int status = XTmrCtr_Initialize(&timer_dev, XPAR_AXI_TIMER_0_BASEADDR);
   if (status != XST_SUCCESS) {
     xil_printf("AXI_TIMER Initialize failed\r\n");

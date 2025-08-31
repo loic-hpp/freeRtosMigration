@@ -1045,6 +1045,8 @@ void StartupTask(void *p_arg) {
     };
   }
 
+  XTmrCtr_Start(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
+
   int err = 0;
   TaskgenerateHandler = xTaskCreateStatic(
       TaskGenerate,   // Fonction tâche
