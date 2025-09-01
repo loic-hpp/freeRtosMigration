@@ -140,7 +140,7 @@ void connect_axi(void) {
 
   status |= connect_AXI_INTC_to_GIC();
   if (status != XST_SUCCESS) {
-    xil_printf("Axi cnnexion to GIC FAILED\r\n");
+    xil_printf("Axi connexion to GIC FAILED\r\n");
     return;
   }
 }

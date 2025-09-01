@@ -78,6 +78,7 @@ float average_blocking_sem_float;
 */
 
 int main(void) {
+  eanable_interruption();
 
   create_application();
 
@@ -371,7 +372,7 @@ void TaskGenerate(void *data) {
         isGenPhase = false;
       }
     } else {
-      // vTaskDelay(delai_pour_vider_les_fifos_msec);
+      vTaskDelay(delai_pour_vider_les_fifos_msec);
       isGenPhase = true;
       do {
         packGenQty = (rand() % 255);
@@ -1013,7 +1014,7 @@ void err_msg(char *entete, uint8_t err) {
 
 void StartupTask(void *p_arg) {
   printf("Initialisation interruptions - \n");
-  eanable_interruption();
+  connect_AXI_INTC_to_GIC();
   printf("Initialisation des interruptions terminées - \n");
 
   printf("Programme initialise\r\n");
@@ -1061,6 +1062,8 @@ void StartupTask(void *p_arg) {
       break;
     };
   }
+
+  xil_printf("\nPress Button 0 to start the system: \n");
 
   XTmrCtr_Start(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
 
