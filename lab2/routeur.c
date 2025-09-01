@@ -223,7 +223,10 @@ void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu) {
 }
 
 void timer_isr(void *p_int_arg, uint32_t source_cpu) {
+  #if DEBUG_ISR == 1
   xil_printf("---------------timer_isr---------------\n");
+  #endif
+
   // réinitialiser le timer
   XTmrCtr_Reset(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
 }
