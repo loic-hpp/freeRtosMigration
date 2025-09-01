@@ -53,6 +53,7 @@
 // ================== BUTTON MASKS ==================
 #define BP0                          0b0001  // Start button
 #define BP1                          0b0010  // Stop button
+#define BP2 						 0b0100		// Bouton pressoir pour l arret complet
 
 // ================== SWITCH MODES ==================
 #define NO_STAT                      0b00

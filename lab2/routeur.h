@@ -198,6 +198,10 @@ int nbPacketMauvaisCRCTotal =0;
 int nbPacketMauvaisePriorite =0;
 int nbPacketMauvaisePrioriteTotal = 0;
 int nbPacketTraites_Video = 0;
+int routerIsOn = 0;
+int routerIsOnPause = 0;
+
+
 
  const TickType_t delai_pour_vider_les_fifos_msec = pdMS_TO_TICKS(50); // la valeur entière ici est dictement le nombre de ms
 int print_paquets_rejetes = 0;

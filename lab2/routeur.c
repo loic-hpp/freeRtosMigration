@@ -198,42 +198,35 @@ void Update_TS(Packet *packet) {
  *********************************************************************************************************
  */
 
-void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu)
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+void fit_timer_isr0(void *p_int_arg, uint32_t source_cpu) {
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 #if DEBUG_ISR == 1
-    xil_printf("------------------ FIT TIMER 0 -------------------\n");
+  xil_printf("------------------ FIT TIMER 0 -------------------\n");
 #endif
+  if (routerIsOn & !routerIsOnPause)
+   xEventGroupSetBitsFromISR(
+      RouterStatus,
+      TASK_STATS_PRINT,
+      &xHigherPriorityTaskWoken
+  );
 
-    // if (Stat_Period == SWITCH1)
-    // {
-        // xEventGroupSetBitsFromISR(
-        //     RouterStatus,
-        //     TASK_STOP_RDY,
-        //     &xHigherPriorityTaskWoken
-        // );
-    // }
-
-    // portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
-void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu)
-{
-    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu) {
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
 
 #if DEBUG_ISR == 1
-    xil_printf("------------------ FIT TIMER 1 -------------------\n");
+  xil_printf("------------------ FIT TIMER 1 -------------------\n");
 #endif
-
 }
 
-void timer_isr(void *p_int_arg, uint32_t source_cpu){
+void timer_isr(void *p_int_arg, uint32_t source_cpu) {
   xil_printf("---------------timer_isr---------------\n");
-	// réinitialiser le timer
-	XTmrCtr_Reset(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
+  // réinitialiser le timer
+  XTmrCtr_Reset(&timer_dev, XPAR_AXI_TIMER_DEVICE_ID);
 }
-
 
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
 #if DEBUG_ISR == 1
@@ -244,7 +237,20 @@ void gpio_isr0(void *p_int_arg, uint32_t source_cpu) {
   u32 status = XGpio_InterruptGetStatus(&gpButton);
   button_data = XGpio_DiscreteRead(&gpButton, GPIO_BUTTONS_CHANNEL);
   TurnLEDButton(button_data);
+
+  BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+  if (button_data == BP0)
+    xEventGroupSetBitsFromISR(RouterStatus, TASK_RESET_RDY,
+                              &xHigherPriorityTaskWoken);
+  else if (button_data == BP1)
+    xEventGroupSetBitsFromISR(RouterStatus, TASK_STOP_RDY,
+                              &xHigherPriorityTaskWoken);
+  else if (button_data == BP2)
+    xEventGroupSetBitsFromISR(RouterStatus, TASK_SHUTDOWN,
+                              &xHigherPriorityTaskWoken);
+
   XGpio_InterruptClear(&gpButton, status);
+  portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 }
 
 void gpio_isr1(void *p_int_arg, uint32_t source_cpu) {
@@ -362,7 +368,7 @@ void TaskGenerate(void *data) {
         isGenPhase = false;
       }
     } else {
-      vTaskDelay(delai_pour_vider_les_fifos_msec);
+      // vTaskDelay(delai_pour_vider_les_fifos_msec);
       isGenPhase = true;
       do {
         packGenQty = (rand() % 255);
@@ -383,33 +389,43 @@ void TaskGenerate(void *data) {
  *********************************************************************************************************
  */
 void TaskReset(void *data) {
+  xil_printf("--------------------- Task Reset --------------------\n");
+
   while (true) {
-    xil_printf("--------------------- Task Reset --------------------\n");
+    xEventGroupWaitBits(RouterStatus,   // Event group handle
+                        TASK_RESET_RDY, // Bits à attendre
+                        pdTRUE,         // Efface les bits après détection
+                        pdTRUE,         // Attendre que TOUS les bits soient SET
+                        portMAX_DELAY   // Blocage infini
+    );
+    if (routerIsOnPause) {
+      xil_printf("--------------------- System Resume --------------------\n");
+      routerIsOnPause = 0;
+    } else {
+      xil_printf("--------------------- System Start --------------------\n");
+      routerIsOn = 1;
+      routerIsOnPause = 0;
+    }
+
     xEventGroupSetBits(RouterStatus, TASKS_ROUTER);
-    EventBits_t flags = xEventGroupGetBits(RouterStatus);
-    xil_printf("--------------------- Flags: %x "
-               "---------------------------------------\n",
-               flags);
-    vTaskSuspend(TaskResetHandler);
   }
 }
 
 void TaskStop(void *data) {
-
-  xSemaphoreTake(Sem, portMAX_DELAY);
-  // Suspend all tasks except statistics one
-  xil_printf(
-      "--------------------- Task stop suspend all tasks -------------\n");
-  float nb_tick_float = (float)xTaskGetTickCount();
-  float period_float = 1.0 / (float)configTICK_RATE_HZ;
-  xil_printf("Temps total d'ex�cution :");
-  printf("'%.5f' ms", nb_tick_float * period_float);
-  xEventGroupClearBits(RouterStatus, TASKS_ROUTER);
-  EventBits_t flags = xEventGroupGetBits(RouterStatus);
-  xil_printf("--------------------- Flags: %x "
-             "---------------------------------------\n",
-             flags);
-  vTaskSuspend(TaskStopHandler);
+  
+  while (true) {
+    xEventGroupWaitBits(RouterStatus,   // Event group handle
+                        TASK_STOP_RDY, // Bits à attendre
+                        pdTRUE,         // Efface les bits après détection
+                        pdTRUE,         // Attendre que TOUS les bits soient SET
+                        portMAX_DELAY   // Blocage infini
+    );
+    if (!routerIsOnPause && routerIsOn == 1) {
+			routerIsOnPause = 1;
+    xEventGroupSetBits(RouterStatus, TASK_STATS_PRINT);
+			xil_printf("-------- System Temporarly Suspended ---------\n");
+		}
+  }
 }
 
 /*
@@ -794,6 +810,8 @@ void TaskStats(void *pdata) {
   while (1) {
     xEventGroupWaitBits(RouterStatus, TASK_STATS_RDY, pdFALSE, pdTRUE,
                         portMAX_DELAY);
+    xEventGroupWaitBits(RouterStatus, TASK_STATS_PRINT, pdTRUE, pdTRUE,
+                        portMAX_DELAY);                   
 
     xSemaphoreTake(mutPrint, portMAX_DELAY);
 
@@ -971,13 +989,9 @@ void TaskStats(void *pdata) {
         nbPacketMauvaisCRCTotal + nbPacketMauvaiseSourceTotal +
         nbPacketFIFOpleineTotal + nbPacketMauvaisePrioriteTotal;
 
-    // On stoppe tout le programme quand on a atteint la limite de paquets
-    if (nbPacketCrees > limite_de_paquets)
-      xSemaphoreGive(Sem);
-
-    // On imprime ls statistiques � toutes les 30 secondes
-    TickType_t xDelay = pdMS_TO_TICKS(10000);
-    vTaskDelay(xDelay);
+    // // On stoppe tout le programme quand on a atteint la limite de paquets
+    // if (nbPacketCrees > limite_de_paquets)
+    //   xSemaphoreGive(Sem);
   }
 }
 
@@ -1092,5 +1106,15 @@ void StartupTask(void *p_arg) {
                                       TaskStopPRIO, TaskStopSTK, &TaskStopTCB);
   err |= taskCreationErrorCheck(TaskStopHandler);
 
-  vTaskSuspend(NULL);
+  xEventGroupWaitBits(RouterStatus, TASK_SHUTDOWN, pdTRUE, pdTRUE,
+                      portMAX_DELAY);
+  xil_printf("Prepare to shutdown System - \r\n");
+  xEventGroupClearBits(RouterStatus, TASKS_ROUTER);
+  TickType_t xDelay = pdMS_TO_TICKS(1000);
+  while (1) {
+    TurnLEDButton(0b1111);
+    vTaskDelay(xDelay);
+    TurnLEDButton(0b0000);
+    vTaskDelay(xDelay);
+  }
 }
