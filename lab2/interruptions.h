@@ -77,6 +77,7 @@ void fit_timer_isr1(void *p_int_arg, uint32_t source_cpu);
 
 void timer_isr(void *p_int_arg, uint32_t source_cpu);
 
+void cleanup();
 
 void gpio_isr0(void *p_int_arg, uint32_t source_cpu);
 void gpio_isr1(void *p_int_arg, uint32_t source_cpu);

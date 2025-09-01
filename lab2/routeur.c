@@ -393,8 +393,6 @@ void TaskGenerate(void *data) {
  *********************************************************************************************************
  */
 void TaskReset(void *data) {
-  xil_printf("--------------------- Task Reset --------------------\n");
-
   while (true) {
     xEventGroupWaitBits(RouterStatus,   // Event group handle
                         TASK_RESET_RDY, // Bits à attendre
@@ -1117,6 +1115,7 @@ void StartupTask(void *p_arg) {
   xil_printf("Prepare to shutdown System - \r\n");
   xEventGroupClearBits(RouterStatus, TASKS_ROUTER);
   TickType_t xDelay = pdMS_TO_TICKS(1000);
+	cleanup();
   while (1) {
     TurnLEDButton(0b1111);
     vTaskDelay(xDelay);

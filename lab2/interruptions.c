@@ -148,9 +148,16 @@ void connect_axi(void) {
 // ================== CLEANUP ==================
 
 void cleanup(void) {
+  XIntc_Disable(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR);
+  XIntc_Disable(&axi_intc, XPAR_FABRIC_AXI_GPIO_1_INTR);
+  XIntc_Disable(&axi_intc, FIT_IRQ0_ID);
+  XIntc_Disable(&axi_intc, FIT_IRQ1_ID);
+  XIntc_Disable(&axi_intc, TIMER_IRQ_ID);
   XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_GPIO_0_INTR);
   XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_GPIO_1_INTR);
-  XIntc_Disconnect(&axi_intc, XPAR_FABRIC_AXI_TIMER_0_INTR);
+  XIntc_Disconnect(&axi_intc, FIT_IRQ0_ID);
+  XIntc_Disconnect(&axi_intc, FIT_IRQ1_ID);
+	XIntc_Disconnect(&axi_intc, TIMER_IRQ_ID);
 }
 
 void eanable_interruption() {
